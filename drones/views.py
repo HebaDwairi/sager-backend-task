@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.response import Response
+from .models import Drone, OSDData
+from .serializers import DroneSerializer
 
-# Create your views here.
+class ListDronesView(ListAPIView):
+  serializer_class = DroneSerializer
+  queryset = Drone.objects.all()
+

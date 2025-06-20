@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import Drone, OSDData
 
-# Register your models here.
+admin.site.register(Drone)
+admin.site.register(OSDData)
