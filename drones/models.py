@@ -7,13 +7,15 @@ class Drone(models.Model):
   last_location = models.PointField(geography=True)
   last_height = models.FloatField()
   last_speed = models.FloatField()
+  is_dangerous = models.BooleanField(default=False)
+  dangerous_reason = models.CharField(max_length=200, null=True, blank=True)
 
   def __str__(self):
     return self.serial_number
 
 
 
-class OSDData(models.Model):
+class DroneData(models.Model):
   drone = models.ForeignKey(Drone, on_delete=models.CASCADE, related_name='osd_data')
   timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
   location = models.PointField(geography=True)

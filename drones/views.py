@@ -1,9 +1,82 @@
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
-from .models import Drone, OSDData
-from .serializers import DroneSerializer
+from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
+from .models import Drone, DroneData
+from django.utils import timezone
+from .serializers import DroneSerializer, FlightPathSerializer
+from datetime import timedelta
+from django.contrib.gis.geos import Point
+from rest_framework.views import APIView
 
 class ListDronesView(ListAPIView):
   serializer_class = DroneSerializer
-  queryset = Drone.objects.all()
 
+  def get_queryset(self):
+    queryset = Drone.objects.all()
+
+    serial = self.request.query_params.get('serial', None)
+    partial_serial = self.request.query_params.get('partial_serial', None)
+
+    if serial:
+      queryset = queryset.filter(serial_number=serial)
+    elif partial_serial:
+      queryset = queryset.filter(serial_number__icontains=partial_serial)
+    
+    return queryset
+
+
+class ListOnlineDronesView(ListAPIView):
+  serializer_class = DroneSerializer
+
+  def get_queryset(self):
+    time_now = timezone.now()
+    one_min = timedelta(minutes=1)
+    one_min_ago = time_now - one_min
+
+    queryset = Drone.objects.filter(last_seen__gte=one_min_ago)
+
+    print(time_now, one_min, one_min_ago)
+    print(queryset)
+
+    return queryset
+
+
+class DronesWithin5KmView(ListAPIView):
+  serializer_class = DroneSerializer
+
+  def get_queryset(self):
+    target_longitude = float(self.request.query_params.get('longitude'))
+    target_latitude = float(self.request.query_params.get('latitude'))
+    target_point = Point(target_longitude, target_latitude, srid=4326)
+    radius_meters = 5000
+
+    queryset = Drone.objects.filter(last_location__dwithin=(target_point, radius_meters))
+
+    return queryset
+
+
+class DroneFlightPathView(APIView):
+  def get(self, request, serial_number, *args, **kwargs):
+    serial = self.kwargs['serial_number']
+    drone = get_object_or_404(Drone, serial_number=serial)
+
+    queryset = DroneData.objects.filter(drone=drone).order_by('timestamp')
+
+    serializer = FlightPathSerializer(queryset, many=True)
+
+    coordinates_list = []
+
+    for point in serializer.data:
+      coordinates_list.append([point['longitude'], point['latitude']])
+    
+    geo_json_obj = {
+      "type": "LineString",
+      "coordinates": coordinates_list
+    }
+
+    return Response(geo_json_obj)
+
+
+class DangerousDronesView(ListAPIView):
+  serializer_class = DroneSerializer
+  queryset = Drone.objects.filter(is_dangerous=True)

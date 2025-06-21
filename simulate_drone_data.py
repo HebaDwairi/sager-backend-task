@@ -10,9 +10,9 @@ import argparse
 class SimulatedDrone:
   def __init__(self, serial):
     self.serial = serial
-    self.latitude = random.choice([31.9783, 31.9784, 31.9785])
-    self.longitude = random.choice([35.8309, 35.8310, 35.8311])
-    self.height = random.choice([10, 50, 150, 20, 460])
+    self.latitude = random.choice([31.9783, 31.9784, 40.7128, 32.2741])
+    self.longitude = random.choice([35.8309, 35.8310, -74.0060, 35.8920])
+    self.height = random.choice([10, 50, 150, 20, 460, 500])
     self.speed = random.uniform(1, 5)
 
   def update(self):
