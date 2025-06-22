@@ -7,6 +7,7 @@ from .serializers import DroneSerializer, FlightPathSerializer, DangerousDroneSe
 from datetime import timedelta
 from django.contrib.gis.geos import Point
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 
 class ListDronesView(ListAPIView):
   serializer_class = DroneSerializer
@@ -42,8 +43,19 @@ class DronesWithin5KmView(ListAPIView):
   serializer_class = DroneSerializer
 
   def get_queryset(self):
-    target_longitude = float(self.request.query_params.get('longitude'))
-    target_latitude = float(self.request.query_params.get('latitude'))
+    if 'longitude' not in self.request.query_params or 'latitude' not in self.request.query_params:
+      raise ValidationError({
+          "error": "Both longitude and latitude parameters are required"
+      })
+      
+    try:
+      target_longitude = float(self.request.query_params.get('longitude'))
+      target_latitude = float(self.request.query_params.get('latitude'))
+    except ValueError:
+      raise ValidationError({
+          "error": "Longitude and latitude must be valid numbers"
+      })
+    
     target_point = Point(target_longitude, target_latitude, srid=4326)
     radius_meters = 5000
 
@@ -70,7 +82,9 @@ class DroneFlightPathView(APIView):
       "type": "LineString",
       "coordinates": coordinates_list
     }
-
+    if not queryset.exists():
+      return Response({"detail": "This drone has no flight path data yet."}, status=204)
+  
     return Response(geo_json_obj)
 
 
