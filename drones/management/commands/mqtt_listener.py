@@ -1,11 +1,11 @@
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
-from drones.models import Drone, DroneData
+from drones.models import Drone, DroneData, NoFlyZone
 from django.contrib.gis.geos import Point
 import json
 
-def classify_danger(height, speed):
+def classify_danger(height, speed, location):
   is_dangerous = False
   dangerous_reason = None
 
@@ -16,10 +16,15 @@ def classify_danger(height, speed):
 
   if speed is not None and speed > 10:
     reasons.append('Moving faster than 10 m/s')
+  
+  overlapping_zones = NoFlyZone.objects.filter(geometry__contains=location)
+  for zone in overlapping_zones:
+    reasons.append(f'Entering no fly zone: {zone.name}')
+  
 
   if reasons:
     is_dangerous = True
-    dangerous_reason = ' and'.join(reasons)
+    dangerous_reason = ' and '.join(reasons)
 
   return is_dangerous, dangerous_reason
 
@@ -42,7 +47,7 @@ class Command(BaseCommand):
       height = data['height']
       speed = data['horizontal_speed']
       location = Point(longitude, latitude)
-      is_dangerous, dangerous_reason = classify_danger(height, speed)
+      is_dangerous, dangerous_reason = classify_danger(height, speed, location)
 
       drone, created = Drone.objects.update_or_create(
           serial_number=serial_number,

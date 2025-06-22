@@ -27,3 +27,8 @@ class DroneData(models.Model):
 
   def __str__(self):
     return f"{self.drone.serial_number}_{self.timestamp.isoformat()}"
+  
+
+class NoFlyZone(models.Model):
+  name = models.CharField(max_length=255, unique=True)
+  geometry = models.PolygonField(srid=4326, geography=True)
