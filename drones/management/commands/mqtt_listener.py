@@ -1,32 +1,10 @@
-from django.utils import timezone
+
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
 from drones.models import Drone, DroneData, NoFlyZone
 from django.contrib.gis.geos import Point
 import json
-
-def classify_danger(height, speed, location):
-  is_dangerous = False
-  dangerous_reason = None
-
-  reasons = []
-
-  if height is not None and height > 500:
-    reasons.append('Flying higher than 500 meters')
-
-  if speed is not None and speed > 10:
-    reasons.append('Moving faster than 10 m/s')
-  
-  overlapping_zones = NoFlyZone.objects.filter(geometry__contains=location)
-  for zone in overlapping_zones:
-    reasons.append(f'Entering no fly zone: {zone.name}')
-  
-
-  if reasons:
-    is_dangerous = True
-    dangerous_reason = ' and '.join(reasons)
-
-  return is_dangerous, dangerous_reason
+from ...services import process_drone_message
 
 class Command(BaseCommand):
   def handle(self, *args, **options):
@@ -39,37 +17,14 @@ class Command(BaseCommand):
     
 
     def on_message(client, userdata, message):
-      data = json.loads(message.payload)
+      try:
+        data = json.loads(message.payload)
+      except json.JSONDecodeError as e:
+        print(f"Failed to decode JSON from MQTT message on topic {message.topic}: {e}. Payload: {message.payload.decode()}")
+        return
+      
       serial_number = message.topic.split("/")[2]
-
-      longitude = data['longitude']
-      latitude = data['latitude']
-      height = data['height']
-      speed = data['horizontal_speed']
-      location = Point(longitude, latitude)
-      is_dangerous, dangerous_reason = classify_danger(height, speed, location)
-
-      drone, created = Drone.objects.update_or_create(
-          serial_number=serial_number,
-          defaults={
-              'last_seen': timezone.now(),
-              'last_location': location,
-              'last_height': height,
-              'last_speed': speed,
-              'is_dangerous': is_dangerous,
-              'dangerous_reason': dangerous_reason
-          }
-      )
-
-      DroneData.objects.create(
-        drone=drone,
-        location = location,
-        latitude = latitude,
-        longitude = longitude,
-        height = height,
-        horizontal_speed = speed,
-        raw_data = data
-      )
+      process_drone_message(serial_number=serial_number, data=data)
       
     
     mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)

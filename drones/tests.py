@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 from rest_framework import status
 from datetime import timedelta
-import json
+
 
 class DroneAPITestCase(APITestCase):
   def setUp(self):
@@ -161,7 +161,7 @@ class DroneAPITestCase(APITestCase):
     self.assertNotIn(self.drone_4.serial_number, dangerous_drones_serials)
 
   def test_drones_within_5km_success(self):
-    '''test retreiving drones within 5 km from drone 1'''
+    '''test retreiving drones within 5 km from drone'''
 
     base_url = reverse('drones-within-5km-from-point')
     target_location = self.drone_1.last_location
@@ -209,3 +209,11 @@ class DroneAPITestCase(APITestCase):
     self.assertEqual(response_data['coordinates'][0], [self.data_point_1.location.x, self.data_point_1.location.y])
     self.assertEqual(response_data['coordinates'][1], [self.data_point_2.location.x, self.data_point_2.location.y])
     self.assertEqual(response_data['coordinates'][2], [self.data_point_3.location.x, self.data_point_3.location.y])
+
+  def test_within_5km_missing_params(self):
+    """test that within-5km endpoint returns error when parameters are missing"""
+    url = reverse('drones-within-5km-from-point')
+    response = self.client.get(url)
+    
+    self.assertEqual(response.status_code, 400)
+    self.assertIn('error', response.json())
