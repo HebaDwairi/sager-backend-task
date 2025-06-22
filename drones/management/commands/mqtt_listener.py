@@ -1,10 +1,8 @@
 
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
-from drones.models import Drone, DroneData, NoFlyZone
-from django.contrib.gis.geos import Point
 import json
-from ...services import process_drone_message
+from ...services import DroneService
 
 class Command(BaseCommand):
   def handle(self, *args, **options):
@@ -24,7 +22,7 @@ class Command(BaseCommand):
         return
       
       serial_number = message.topic.split("/")[2]
-      process_drone_message(serial_number=serial_number, data=data)
+      DroneService.process_drone_message(serial_number=serial_number, data=data)
       
     
     mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)

@@ -49,7 +49,7 @@ docker-compose up --build -d
 4. **Create a Superuser (for Admin Access)**
 
 ```bash
-docker-compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py createsuperuser
 ```
 
 ---
@@ -103,7 +103,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-## API Schema
+## API Swagger
 
 - Swagger UI: [http://localhost:8000/api/schema/swagger-ui/](http://localhost:8000/api/schema/swagger-ui/)
 
@@ -115,5 +115,5 @@ Authorization: Bearer <access_token>
 
 
 ```bash
-docker-compose exec web python manage.py test
+docker compose exec web python manage.py test
 ```
