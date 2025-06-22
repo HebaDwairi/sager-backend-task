@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from .models import Drone, DroneData
 from django.utils import timezone
-from .serializers import DroneSerializer, FlightPathSerializer
+from .serializers import DroneSerializer, FlightPathSerializer, DangerousDroneSerializer
 from datetime import timedelta
 from django.contrib.gis.geos import Point
 from rest_framework.views import APIView
@@ -34,9 +34,6 @@ class ListOnlineDronesView(ListAPIView):
     one_min_ago = time_now - one_min
 
     queryset = Drone.objects.filter(last_seen__gte=one_min_ago)
-
-    print(time_now, one_min, one_min_ago)
-    print(queryset)
 
     return queryset
 
@@ -78,5 +75,5 @@ class DroneFlightPathView(APIView):
 
 
 class DangerousDronesView(ListAPIView):
-  serializer_class = DroneSerializer
+  serializer_class = DangerousDroneSerializer
   queryset = Drone.objects.filter(is_dangerous=True)
