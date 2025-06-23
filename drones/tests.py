@@ -5,10 +5,16 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 from rest_framework import status
 from datetime import timedelta
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class DroneAPITestCase(APITestCase):
   def setUp(self):
+    self.user = User.objects.create_user(username='testuser', password='testpassword')
+    # 2. Force authenticate the client with this user
+    self.client.force_authenticate(user=self.user)
     now = timezone.now()
 
     self.drone_1 = Drone.objects.create(

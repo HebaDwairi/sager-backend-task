@@ -16,7 +16,7 @@
 ### Prerequisites
 
 - Docker
-- Docker Compose
+
 ---
 
 ### Setup Instructions
@@ -25,7 +25,7 @@
 
 ```bash
 git clone https://github.com/HebaDwairi/sager-backend-task.git
-
+cd sager-backend-task
 ```
 
 2. **Create a `.env` File**
@@ -36,17 +36,24 @@ In the root directory:
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=drones_db
-SECRET_KEY=your_secret_key_here
+DJANGO_SECRET_KEY=your_secret_key_here
 DEBUG=True
 ```
 
 3. **Start the Project**
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
+```
+4.  **Apply Database Migrations**
+
+
+```bash
+docker compose exec web python manage.py migrate
 ```
 
-4. **Create a Superuser (for Admin Access)**
+
+5. **Create a Superuser (for Admin Access)**
 
 ```bash
 docker compose exec web python manage.py createsuperuser
@@ -59,11 +66,22 @@ docker compose exec web python manage.py createsuperuser
 To simulate drone telemetry via MQTT:
 
 ```bash
-python simulate_drone_data.py --count 3 --delay 2
+docker compose exec web python simulate_drone_data.py --count 3 --delay 2
 ```
 
 - `--count`: number of drones to simulate
 - `--delay`: seconds between telemetry messages per drone
+
+---
+
+## Accessing the Application
+
+Once the Docker containers are running, you can access the various parts of the application:
+
+* **Django Web Application:** [http://localhost:8000/](http://localhost:8000/)
+* **API Root:** [http://localhost:8000/api/](http://localhost:8000/api/)
+* **Swagger UI :** [http://localhost:8000/api/schema/swagger-ui/](http://localhost:8000/api/schema/swagger-ui/)
+* **Django Admin Panel:** [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
 ---
 
@@ -100,15 +118,6 @@ Include it in the `Authorization` header:
 ```http
 Authorization: Bearer <access_token>
 ```
-
----
-
-## API Swagger
-
-- Swagger UI: [http://localhost:8000/api/schema/swagger-ui/](http://localhost:8000/api/schema/swagger-ui/)
-
-
----
 
 
 ## Running Tests

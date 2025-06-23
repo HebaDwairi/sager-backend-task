@@ -6,7 +6,6 @@ import random
 import argparse
 
 
-
 class SimulatedDrone:
   def __init__(self, serial):
     self.serial = serial
@@ -68,7 +67,7 @@ def main(count=3, delay=2):
       publish.single(
         f"thing/product/{drone.serial}/osd",
         payload=json.dumps(data),
-        hostname="localhost",
+        hostname="mosquitto",
         port=1883
       )
     time.sleep(delay)
