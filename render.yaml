@@ -5,8 +5,6 @@ databases:
     user: postgres
     postgresMajorVersion: 14
     ipAllowList: []
-    extensions:
-      - postgis
 
 services:
   - type: web
