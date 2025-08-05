@@ -1,12 +1,10 @@
-databases:
-  - name: db
-    plan: free
-    databaseName: db
-    user: postgres
-    postgresMajorVersion: 14
-    ipAllowList: []
-
 services:
+  - type: psql
+    name: db
+    plan: free
+    postgresMajorVersion: 15
+    postgisEnabled: true
+
   - type: web
     name: api
     plan: free
