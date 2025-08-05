@@ -27,7 +27,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool, default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['drones-api.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -63,6 +63,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://sagerspace-dashboard.vercel.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
