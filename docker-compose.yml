@@ -45,6 +45,7 @@ services:
     restart: unless-stopped
     ports:
       - 1883:1883
+      - 8080:8080
     volumes:
       - mqtt_data:/mosquitto/data
       - mqtt_log:/mosquitto/log

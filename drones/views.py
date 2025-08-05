@@ -7,6 +7,7 @@ from django.contrib.gis.geos import Point
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 from .services import DroneService, validate_coordinate_params
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 @extend_schema(
     parameters=[
@@ -92,5 +93,25 @@ class DroneFlightPathView(APIView):
 
 
 class DangerousDronesView(ListAPIView):
-  serializer_class = DangerousDroneSerializer
+  serializer_class = DroneSerializer
   queryset = Drone.objects.filter(is_dangerous=True)
+
+
+
+class DroneDetailView(RetrieveUpdateDestroyAPIView):
+  queryset = Drone.objects.all()
+  serializer_class = DroneSerializer
+  lookup_field = 'serial_number'
+
+
+class DroneStatsView(APIView):
+  def get(self, request):
+    total = Drone.objects.count()
+    online = DroneService.get_online_drones().count()
+    dangerous = Drone.objects.filter(is_dangerous=True).count()
+    
+    return Response({
+             "total": total,
+             "online": online,
+             "dangerous": dangerous
+           })
