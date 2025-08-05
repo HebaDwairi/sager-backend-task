@@ -1,10 +1,10 @@
-services:
-  - type: psql
-    name: db
+databases:
+  - name: db
     plan: free
-    postgresMajorVersion: 15
-    postgisEnabled: true
+    databaseName: db
+    user: api
 
+services:
   - type: web
     name: api
     plan: free
