@@ -22,3 +22,6 @@ typing_extensions==4.14.0
 uritemplate==4.2.0
 uvicorn==0.35.0
 whitenoise==6.9.0
+djangorestframework-gis
+djangorestframework-simplejwt
+django-cors-headers
