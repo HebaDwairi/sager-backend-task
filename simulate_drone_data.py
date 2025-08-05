@@ -5,6 +5,10 @@ import string
 import random
 import argparse
 import math
+import ssl
+from paho import mqtt
+import paho.mqtt.client as paho
+from decouple import config
 
 # Earth's radius in meters
 EARTH_RADIUS_METERS = 6378137 
@@ -98,7 +102,7 @@ def random_string(len=22):
   chars = string.ascii_uppercase + string.digits
   return ''.join(random.choices(chars, k=len))
       
-def main(count=3, delay=2, broker="mosquitto"):
+def main(count=3, delay=2, broker=config('MQTT_BROKER_HOST')):
   """
   Main function to create drones and publish their data.
   """
@@ -115,13 +119,18 @@ def main(count=3, delay=2, broker="mosquitto"):
 
       topic = f"thing/product/{drone.serial}/osd"
       payload = json.dumps(data, indent=2)
+      sslSettings = ssl.SSLContext(ssl.PROTOCOL_TLS)
+      auth = {"username": config('MQTT_BROKER_USERNAME'), "password": config('MQTT_BROKER_PASSWORD')}
+
 
       try:
         publish.single(
           topic,
           payload=payload,
-          hostname=broker,
-          port=1883
+          hostname=config('MQTT_BROKER_HOST'),
+          port=int(config('MQTT_BROKER_PORT')),
+          auth=auth,
+          tls=sslSettings
         )
         print(f"Published to {topic}: Lat={data['latitude']:.4f}, Lon={data['longitude']:.4f}, H={data['height']:.1f}m, S={data['horizontal_speed']:.1f}m/s")
       except Exception as e:

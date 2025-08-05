@@ -63,6 +63,8 @@ services:
       DB_NAME: ${DB_NAME}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      MQTT_BROKER_HOST: ${MQTT_BROKER_HOST}
+      MQTT_BROKER_PORT: ${MQTT_BROKER_PORT}
     env_file:
       - .env
     depends_on:
